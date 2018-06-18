@@ -1,0 +1,8 @@
+netradio
+netradio2
+netradio-client
+xmptest
+*.c
+*.o
+*.dSYM
+

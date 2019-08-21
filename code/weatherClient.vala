@@ -1,4 +1,4 @@
-#!/usr/bin/env vala
+#!/usr/bin/env vala --pkg=gio-2.0
 
 void main()
 {
@@ -14,22 +14,27 @@ void main()
         var resolver = Resolver.get_default();
         var addresses = resolver.lookup_by_name( host, null );
         var address = addresses.nth_data( 0 );
-        print( @"Resolved $host to $address\n" );
+        stderr.printf( @"Resolved $host to $address\n" );
 
         var client = new SocketClient();
         var addr = new InetSocketAddress( address, port );
         var conn = client.connect( addr );
-        print( @"Connected to $host\n" );
+        stderr.printf( @"Connected to $host\n" );
 
         conn.output_stream.write( message.data );
-        print( @"Wrote request $message\n" );
+        stderr.printf( @"Wrote request $message\n" );
 
         var response = new DataInputStream( conn.input_stream );
         var status_line = response.read_line( null ).strip();
-        print( @"Received status line: '$status_line'\n" );
+        stderr.printf( @"Got status line: '$status_line'\n" );
+
+        if ( ! ( "200" in status_line ) )
+        {
+            error( "Service did not answer with 200 OK" );
+        }
 
         var headers = new HashTable<string,string>( str_hash, str_equal );
-        var line = "";        
+        var line = "";
         while ( line != "\r" )
         {
             line = response.read_line( null );
@@ -39,24 +44,16 @@ void main()
                 var header = headerComponents[0].strip();
                 var value = headerComponents[1].strip();
                 headers[ header ] = value;
-                print( @"Got Header: $header = $value\n" );
+                stderr.printf( @"Got Header: $header = $value\n" );
             }
         }
-        
-        var body = new string[] {};
-        while ( line != null )
-        {
-            line = response.read_line( null );
-            body += line.strip();
-        }
-        
-        if ( ! ( "200" in status_line ) )
-        {
-            error( "Service did not answer with 200 OK" );
-        }
-        
-        var jsonResponse = string.joinv( "\n", body );
-        print( @"Got JSON response: $jsonResponse" );
+        var contentLength = headers[ "Content-Length" ].to_int();
+
+        var jsonResponse = new uint8[ contentLength ];
+        size_t actualLength = 0;
+        response.read_all( jsonResponse, out actualLength );
+        stderr.printf( @"Got $contentLength bytes of JSON response: %s\n", jsonResponse );
+        stdout.printf( @"%s", jsonResponse );
 
     }
     catch (Error e)

@@ -166,7 +166,7 @@ class MainWindow : Gtk.ApplicationWindow
 
     private string markupSanitize( string text )
     {
-        return text.replace( "&", "&amp;" );
+        return text; //text.replace( "&", "&amp;" );
     }
 
     //

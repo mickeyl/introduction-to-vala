@@ -53,7 +53,7 @@ class PlayerController : Object
     //
     public async void loadPrimaryCategories()
     {
-        var genres = yield DirbleClient.sharedInstance().loadGenres();
+        var genres = yield DirectoryClient.sharedInstance().loadGenres();
         if ( genres != null )
         {
             print( @"Received $(genres.length) genres\n" );
@@ -67,7 +67,7 @@ class PlayerController : Object
 
     public async void loadStationsForGenre( GenreModel genre )
     {
-        var stations = yield DirbleClient.sharedInstance().loadStations( genre );
+        var stations = yield DirectoryClient.sharedInstance().loadStations( genre );
         if ( stations != null )
         {
             print( @"Received $(stations.length) stations\n" );
@@ -81,7 +81,7 @@ class PlayerController : Object
 
     public async void playStation( StationModel station )
     {
-        var url = yield DirbleClient.sharedInstance().loadUrlForStation( station );
+        var url = yield DirectoryClient.sharedInstance().loadUrlForStation( station );
         _player.stop();
         _player.uri = url;
         print( @"Player URI now $url\n" );

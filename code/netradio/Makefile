@@ -10,7 +10,7 @@ SOURCES = \
   streamModel.vala \
   imageModel.vala \
   \
-  dirbleClient.vala \
+  directoryClient.vala \
   playerController.vala \
   \
   dbusInterface.vala \
@@ -23,7 +23,7 @@ CSOURCES = \
   genreModel.c \
   streamModel.c \
   imageModel.c \
-  dirbleClient.c \
+  directoryClient.c \
   fontAwesomeButton.c \
   playerController.c \
   dbusInterface.c \

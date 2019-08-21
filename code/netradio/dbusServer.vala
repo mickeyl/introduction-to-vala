@@ -44,7 +44,7 @@ public class DBusServer : Object, NetRadioDBusInterface
     //
     public async Item[] listGenres() throws DBusError, IOError
     {
-        var genres = yield DirbleClient.sharedInstance().loadGenres();
+        var genres = yield DirectoryClient.sharedInstance().loadGenres();
         var items = new Item[] {};
         for ( int i = 0; i < genres.length; ++i )
         {
@@ -56,7 +56,7 @@ public class DBusServer : Object, NetRadioDBusInterface
     public async Item[] listStations( int id ) throws NetRadioError, DBusError, IOError
     {
         var genre = new GenreModel( id );
-        var stations = yield DirbleClient.sharedInstance().loadStations( genre );
+        var stations = yield DirectoryClient.sharedInstance().loadStations( genre );
         var items = new Item[] {};
         if ( stations == null )
         {

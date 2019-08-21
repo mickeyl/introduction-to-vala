@@ -1,19 +1,19 @@
 // This file belongs to the book "Introduction to Vala Programming" – https://leanpub.com/vala
 // (C) 2017 Dr. Michael 'Mickey' Lauer – GPLv3
 
-const string DirblePrefixURL = "https://wellenreiter.vanille.de/netradio";
-const string DirbleGetPrimaryCategoriesURL = DirblePrefixURL + "/genres";
-const string DirbleGetStationsForGenreURL = DirblePrefixURL + "/genres/%u";
-const string DirbleGetStationURL = DirblePrefixURL + "/stations/%u";
+const string PrefixURL = "https://wellenreiter.vanille.de/netradio";
+const string GetPrimaryCategoriesURL = PrefixURL + "/genres";
+const string GetStationsForGenreURL = PrefixURL + "/genres/%u";
+const string GetStationURL = PrefixURL + "/stations/%u";
 
 public delegate void StringCompletionHandler( uint statusCode, Json.Node rootNode );
 
-public class DirbleClient : Object
+public class DirectoryClient : Object
 {
     private Soup.Session _session;
-    private static DirbleClient __instance;
+    private static DirectoryClient __instance;
 
-    private DirbleClient()
+    private DirectoryClient()
     {
         _session = new Soup.Session();
     }
@@ -21,11 +21,11 @@ public class DirbleClient : Object
     //
     // API
     //
-    public static DirbleClient sharedInstance()
+    public static DirectoryClient sharedInstance()
     {
         if ( __instance == null )
         {
-            __instance = new DirbleClient();
+            __instance = new DirectoryClient();
         }
 
         return __instance;
@@ -35,7 +35,7 @@ public class DirbleClient : Object
     {
         GenreModel[] result = null;
 
-        var url = DirbleGetPrimaryCategoriesURL;
+        var url = GetPrimaryCategoriesURL;
         loadJsonForURL( url, ( statusCode, rootNode ) => {
 
             if ( statusCode == 200 )
@@ -59,7 +59,7 @@ public class DirbleClient : Object
     {
         StationModel[] result = null;
 
-        var url = DirbleGetStationsForGenreURL.printf( genre.id );
+        var url = GetStationsForGenreURL.printf( genre.id );
         loadJsonForURL( url, ( statusCode, rootNode ) => {
 
             if ( statusCode == 200 )
@@ -83,7 +83,7 @@ public class DirbleClient : Object
     public async string? loadUrlForStation( StationModel station )
     {
         string result = null;
-        var url = DirbleGetStationURL.printf( station.id );
+        var url = GetStationURL.printf( station.id );
         loadJsonForURL( url, ( statusCode, rootNode ) => {
 
             if ( statusCode == 200 )

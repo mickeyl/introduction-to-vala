@@ -8,7 +8,7 @@ public class GenreModel : Object
     public string description { get; private set; }
     public string slug { get; private set; }
     public string ancestry { get; private set; }
-        
+
     public GenreModel( int id, string title = "", string description = "", string ancestry = "" )
     {
         _id = id;
@@ -16,13 +16,13 @@ public class GenreModel : Object
         _description = description;
         _ancestry = ancestry;
     }
-    
+
     public GenreModel.fromJsonObject( Json.Object json )
     {
         _id = (int) json.get_int_member( "id" );
-        _title = json.get_string_member( "title" );
-        _description = json.get_string_member( "description" );
-        _slug = json.get_string_member( "slug" );
-        _ancestry = json.get_string_member( "ancestry" );
+        _title = json.get_string_member( "name" );
+
+        var count = json.get_int_member( "count" );
+        _description = @"$count stations in genre";
     }
 }

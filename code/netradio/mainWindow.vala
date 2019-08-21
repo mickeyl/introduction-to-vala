@@ -12,29 +12,29 @@ class MainWindow : Gtk.ApplicationWindow
     private Gtk.Label _infoLabel;
     private FontAwesomeButton _playButton;
     private PlayerController _controller;
-    
+
     private GenreModel[]? _genres;
     private GenreModel? _genre;
     private StationModel[]? _stations;
     private StationModel _station;
 
     private bool initialSelectionHack;
-    
+
     //
     // Constructor
     //
     public MainWindow( Gtk.Application app, string title )
-    {        
+    {
         Object( application: app, title: title );
 
         _box = new Gtk.Box( Gtk.Orientation.VERTICAL, 0 );
         _box.homogeneous = false;
         add( _box );
-        
+
         _headerBar = new Gtk.HeaderBar();
         _box.pack_start( _headerBar, false, false );
-        
-        _backButton = new FontAwesomeButton( 18, "&#61523;" );        
+
+        _backButton = new FontAwesomeButton( 18, "&#61523;" );
         _backButton.clicked.connect( onBackButtonClicked );
         _headerBar.pack_start( _backButton );
 
@@ -49,16 +49,16 @@ class MainWindow : Gtk.ApplicationWindow
 		var cell = new Gtk.CellRendererText();
         cell.set_padding( 4, 10 );
 		_treeView.insert_column_with_attributes( -1, "Name & Description", cell, "markup", 0 );
-        
+
         _actionBar = new Gtk.ActionBar();
         _box.pack_start( _actionBar, false, false );
-        
+
         _infoLabel = new Gtk.Label( "" );
         _actionBar.set_center_widget( _infoLabel );
         _playButton = new FontAwesomeButton( 18, "&#61515;" );
         _playButton.clicked.connect( onPlayButtonClicked );
         _actionBar.pack_end( _playButton );
-        
+
         _controller = PlayerController.sharedInstance();
         _controller.didUpdateGenres.connect( onControllerDidUpdateGenres );
         _controller.didUpdateStations.connect( onControllerDidUpdateStations );
@@ -67,7 +67,7 @@ class MainWindow : Gtk.ApplicationWindow
         _controller.loadPrimaryCategories();
         //_controller.playStation( new StationModel() );
     }
-    
+
     //
     // Helpers
     //
@@ -77,7 +77,7 @@ class MainWindow : Gtk.ApplicationWindow
         updateList();
         updateActionBar();
     }
-    
+
     private void updateHeader()
     {
         if ( _genre != null )
@@ -93,14 +93,14 @@ class MainWindow : Gtk.ApplicationWindow
             _backButton.sensitive = false;
         }
     }
-                
+
     private void updateList()
     {
         var listmodel = new Gtk.ListStore( 1, typeof(string) );
 		_treeView.set_model( listmodel );
-        
+
         Gtk.TreeIter iter;
-        
+
         if ( _stations == null )
         {
             for( int i = 0; i < _genres.length; ++i )
@@ -122,17 +122,17 @@ class MainWindow : Gtk.ApplicationWindow
             {
                 listmodel.append( out iter );
                 var title = markupSanitize( _stations[i].name );
-                var subtitle = markupSanitize( _stations[i].website );
+                var subtitle = markupSanitize( _stations[i].description );
                 var str = "<big><b>%s</b></big>\n\n%s".printf( title, subtitle );
                 listmodel.set( iter, 0, str );
             }
-        }            
+        }
     }
-    
+
     private void updateActionBar()
     {
         string stateString = "";
-        
+
         switch ( _controller.state )
         {
             case Gst.PlayerState.STOPPED:
@@ -140,7 +140,7 @@ class MainWindow : Gtk.ApplicationWindow
                 _playButton.icon = "";
                 _playButton.set_sensitive( false );
                 break;
-                
+
             case Gst.PlayerState.BUFFERING:
                 stateString = "BUFFERING...";
                 _playButton.icon = "&#61712;";
@@ -159,38 +159,38 @@ class MainWindow : Gtk.ApplicationWindow
                 _playButton.set_sensitive( true );
                 break;
         }
-                
+
         var str = @"$stateString";
-        _infoLabel.set_markup( str );            
+        _infoLabel.set_markup( str );
     }
-    
+
     private string markupSanitize( string text )
     {
         return text.replace( "&", "&amp;" );
     }
-    
+
     //
     // Slots
     //
-    
+
     private void onControllerDidUpdateGenres( GenreModel[] genres )
     {
         _genres = genres;
         _stations = null;
         updateUI();
     }
-    
+
     private void onControllerDidUpdateStations( StationModel[] stations )
     {
         _stations = stations;
         updateUI();
     }
-    
+
     private void onControllerDidUpdatePlayerState()
     {
         updateActionBar();
     }
-    
+
     private void onTreeViewSelectionChanged()
     {
         Gtk.TreeModel model;
@@ -209,7 +209,7 @@ class MainWindow : Gtk.ApplicationWindow
         Gtk.TreePath path = paths.first().data;
         int[] indices = path.get_indices();
         var rowIndex = indices[0];
-        
+
         if ( _genre == null )
         {
             _genre = _genres[rowIndex];
@@ -221,19 +221,19 @@ class MainWindow : Gtk.ApplicationWindow
             _controller.playStation( _station );
         }
     }
-    
+
     private void onBackButtonClicked()
     {
         _genre = null;
         _stations = null;
         updateUI();
     }
-    
+
     private void onPlayButtonClicked()
     {
         _controller.togglePlayPause();
     }
-        
+
     private void onPlayerStateChanged()
     {
         updateActionBar();

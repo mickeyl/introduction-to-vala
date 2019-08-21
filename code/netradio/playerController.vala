@@ -4,10 +4,10 @@
 class PlayerController : Object
 {
     static PlayerController __instance;
-    
+
     private Gst.Player _player;
     private Gst.PlayerState _state;
-        
+
     public signal void didUpdateGenres( GenreModel[] genres );
     public signal void didUpdateStations( StationModel[] stations );
     public signal void didUpdatePlayerState();
@@ -17,7 +17,7 @@ class PlayerController : Object
             return _state;
         }
     }
-    
+
     public static PlayerController sharedInstance()
     {
         if ( __instance == null )
@@ -26,7 +26,7 @@ class PlayerController : Object
         }
         return __instance;
     }
-    
+
     private PlayerController()
     {
         _player = new Gst.Player( null, null );
@@ -34,37 +34,37 @@ class PlayerController : Object
         _player.media_info_updated.connect( onPlayerMediaInfoUpdated );
         _player.state_changed.connect( onPlayerStateChanged );
     }
-    
+
     //
     // Slots
     //
     public void onPlayerMediaInfoUpdated()
     {
     }
-    
+
     public void onPlayerStateChanged( Gst.PlayerState state )
     {
         _state = state;
         didUpdatePlayerState();
     }
-    
+
     //
     // API
-    //    
+    //
     public async void loadPrimaryCategories()
     {
         var genres = yield DirbleClient.sharedInstance().loadGenres();
         if ( genres != null )
         {
             print( @"Received $(genres.length) genres\n" );
-            didUpdateGenres( genres );            
+            didUpdateGenres( genres );
         }
         else
         {
             warning( @"Could not get genres" );
         }
     }
-    
+
     public async void loadStationsForGenre( GenreModel genre )
     {
         var stations = yield DirbleClient.sharedInstance().loadStations( genre );
@@ -78,23 +78,23 @@ class PlayerController : Object
             warning( @"Could not get stations" );
         }
     }
-    
-    public void playStation( StationModel station )
+
+    public async void playStation( StationModel station )
     {
-        var url = station.streamURL;        
+        var url = yield DirbleClient.sharedInstance().loadUrlForStation( station );
         _player.stop();
         _player.uri = url;
         print( @"Player URI now $url\n" );
         _player.play();
     }
-    
+
     public void togglePlayPause()
     {
         switch ( _state )
         {
             case Gst.PlayerState.STOPPED:
                 break;
-                
+
             case Gst.PlayerState.BUFFERING:
                 break;
 
@@ -105,19 +105,19 @@ class PlayerController : Object
             case Gst.PlayerState.PLAYING:
                 _player.pause();
                 break;
-                
+
             default:
                 break;
         }
     }
-    
+
     //
     // Helpers
     //
     public void foo()
     {
             string infoString = "";
-        
+
         if ( _player != null && _player.media_info != null )
         {
             unowned List<Gst.PlayerAudioInfo> streamList = Gst.Player.get_audio_streams( _player.media_info );
@@ -126,8 +126,8 @@ class PlayerController : Object
                 print( @"Got $(streamList.length()) streams\n" );
                 unowned Gst.PlayerAudioInfo stream = (Gst.PlayerAudioInfo)streamList.data;
                 print( "%s\n", stream.get_type().name() );
-                
-                
+
+
                 print( "%p\n", streamList.data );
                 print( "%p\n", stream );
 
@@ -141,7 +141,7 @@ class PlayerController : Object
                 {
                     print( "stream is 0\n" );
                 }
-                
+
                 var taglist = stream.get_tags();
                 if ( taglist != null )
                 {
@@ -159,5 +159,5 @@ class PlayerController : Object
         }
     }
 
-    
+
 }

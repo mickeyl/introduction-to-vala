@@ -1,11 +1,10 @@
 // This file belongs to the book "Introduction to Vala Programming" – https://leanpub.com/vala
 // (C) 2017 Dr. Michael 'Mickey' Lauer – GPLv3
 
-const string DirblePrefixURL = "http://api.dirble.com/v2";
-const string DirbleToken = "afdecd241069030f6c04bac10c";
-const string DirbleGetPrimaryCategoriesURL = DirblePrefixURL + "/categories/primary?token=%s";
-const string DirbleGetChildCategoriesURL = DirblePrefixURL + "/categories/%s/childs?token=%s";
-const string DirbleGetStationsURL = DirblePrefixURL + "/category/%u/stations?token=%s";
+const string DirblePrefixURL = "https://wellenreiter.vanille.de/netradio";
+const string DirbleGetPrimaryCategoriesURL = DirblePrefixURL + "/genres";
+const string DirbleGetStationsForGenreURL = DirblePrefixURL + "/genres/%u";
+const string DirbleGetStationURL = DirblePrefixURL + "/stations/%u";
 
 public delegate void StringCompletionHandler( uint statusCode, Json.Node rootNode );
 
@@ -13,12 +12,12 @@ public class DirbleClient : Object
 {
     private Soup.Session _session;
     private static DirbleClient __instance;
-    
+
     private DirbleClient()
     {
         _session = new Soup.Session();
     }
-    
+
     //
     // API
     //
@@ -28,17 +27,17 @@ public class DirbleClient : Object
         {
             __instance = new DirbleClient();
         }
-        
+
         return __instance;
     }
-    
+
     public async GenreModel[]? loadGenres()
     {
         GenreModel[] result = null;
-        
-        var url = DirbleGetPrimaryCategoriesURL.printf( DirbleToken );
+
+        var url = DirbleGetPrimaryCategoriesURL;
         loadJsonForURL( url, ( statusCode, rootNode ) => {
-            
+
             if ( statusCode == 200 )
             {
                 var genres = new GenreModel[] {};
@@ -49,20 +48,20 @@ public class DirbleClient : Object
                     var genre = new GenreModel.fromJsonObject( object );
                     genres += genre;
                 }
-                result = genres;            
+                result = genres;
             }
         } );
-        
+
         return result;
     }
-    
+
     public async StationModel[]? loadStations( GenreModel genre )
     {
         StationModel[] result = null;
-        
-        var url = DirbleGetStationsURL.printf( genre.id, DirbleToken );
+
+        var url = DirbleGetStationsForGenreURL.printf( genre.id );
         loadJsonForURL( url, ( statusCode, rootNode ) => {
-            
+
             if ( statusCode == 200 )
             {
                 var stations = new StationModel[] {};
@@ -75,12 +74,29 @@ public class DirbleClient : Object
                 }
                 result = stations;
             }
-                        
-        } );    
-        
-        return result;    
+
+        } );
+
+        return result;
     }
-    
+
+    public async string? loadUrlForStation( StationModel station )
+    {
+        string result = null;
+        var url = DirbleGetStationURL.printf( station.id );
+        loadJsonForURL( url, ( statusCode, rootNode ) => {
+
+            if ( statusCode == 200 )
+            {
+                var object = rootNode.get_object();
+                result = object.get_string_member( "url" );
+            }
+
+        } );
+
+        return result;
+    }
+
     //
     // Helpers
     //
@@ -101,6 +117,6 @@ public class DirbleClient : Object
         block( message.status_code, rootnode  );
 #endif
     }
-    
+
 }
 
